@@ -49,7 +49,7 @@ void setup(void)
   lcd.backlight();
 
   //initalize i2c for tsl2591
-  myWire.setClock(20000); //20kHz to maximize wire length
+  myWire.setClock(10000); //10kHz to maximize wire length
   myWire.begin();
   
   //initalize tsl2591
