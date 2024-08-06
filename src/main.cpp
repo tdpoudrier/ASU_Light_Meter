@@ -11,6 +11,10 @@
 #include <LiquidCrystal_I2C.h>
 #include <stdio.h>
 #include <math.h>
+#include <Wire.h>
+
+//custom i2c
+TwoWire myWire = TwoWire();
 
 #define GAIN_BTN 12
 #define SAMPLE_BTN 13
@@ -39,12 +43,17 @@ void setup(void)
   pinMode(GAIN_BTN, INPUT_PULLUP);
   pinMode(SAMPLE_BTN, INPUT_PULLUP);
 
+  
   //initalize lcd
   lcd.init(); 
   lcd.backlight();
+
+  //initalize i2c for tsl2591
+  myWire.setClock(20000); //20kHz to maximize wire length
+  myWire.begin();
   
   //initalize tsl2591
-  if (tsl.begin()) 
+  if (tsl.begin(&myWire, TSL2591_ADDR)) 
   {
     Serial.println(F("Found TSL2591 sensor"));
     lcd.print("Light Meter");
