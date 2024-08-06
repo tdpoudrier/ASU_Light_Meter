@@ -60,7 +60,8 @@ void setup(void)
   //Configure light sensor
   tsl.setGain(TSL2591_GAIN_MED);
   tsl.setTiming(TSL2591_INTEGRATIONTIME_300MS);
-
+  
+  //update display
   delay(3000);
   lcd.clear();
   lcd.setCursor(0,0);
@@ -70,6 +71,7 @@ void setup(void)
 
 void loop(void) 
 {
+  //Store user input
   bool getSample = false;
   bool changeGain = false;
 
@@ -99,6 +101,7 @@ void loop(void)
     }
   }
 
+  //Get and print the current lux value
   if (getSample == true) {
     double lux = tsl.getLux();
     char formated_lux[10] = {0}; //string
@@ -135,7 +138,7 @@ void loop(void)
     Serial.print("Formatted Lux: ");
     Serial.println(formated_lux);
 
-    //Print lux to LCD
+    //Print lux to LCD, lux is -1 when gain error occurs
     lcd.setCursor(0,1);
     if (lux > 0) {
       lcd.print("Lux: ");
