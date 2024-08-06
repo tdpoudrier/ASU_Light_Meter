@@ -130,14 +130,14 @@ void loop(void)
         snprintf(formated_lux, 10, "%d", (int) round(lux));
         break;
       
-      //two decimal precision
+      //three decimal precision
       case TSL2591_GAIN_HIGH:
-        snprintf(formated_lux, 10, "%d.%02d", (int) lux, (int) (lux*100) % 100);
+        snprintf(formated_lux, 10, "%d.%03d", (uint16_t) lux, (uint16_t) (lux*1000) % 1000);
         break;
       
-      //four decimal precision
+      //six decimal precision
       case TSL2591_GAIN_MAX:
-        snprintf(formated_lux, 10, "%d.%04d", (int) lux, (int) (lux*10000) % 10000);
+        snprintf(formated_lux, 10, "%d.%06ld", (int) lux, (int) (lux*1000000) % 1000000);
         break;
     }
     
