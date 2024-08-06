@@ -19,8 +19,8 @@
 
 void configureSensor(void);
 
-LiquidCrystal_I2C lcd(0x3F,20,4);  // set the LCD address to 0x27 for a 16 chars and 2 line display
-Adafruit_TSL2591 tsl = Adafruit_TSL2591(2591); // pass in a number for the sensor identifier (for your use later)
+LiquidCrystal_I2C lcd(0x3F,20,4);  // set the LCD address to 0x3F for a 16 chars and 2 line display
+Adafruit_TSL2591 tsl = Adafruit_TSL2591();
 
 //Define debounce variables
 int prevSamplePress = LOW;
