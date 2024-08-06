@@ -1,6 +1,8 @@
-/* TSL2591 Digital Light Sensor */
-/* Dynamic Range: 600M:1 */
-/* Maximum Lux: 88K */
+/**
+ * @author Tevin Poudrier
+ * @date Tuesday, August 6, 2024 9:43:15 AM
+ * @details Light meter program for ASU, allows user to configure the gain and get lux from TSL2591
+ */
 
 #include <Arduino.h>
 #include <Wire.h>
@@ -10,7 +12,6 @@
 #include <stdio.h>
 #include <math.h>
 
-#define MODE_BTN 11
 #define GAIN_BTN 12
 #define SAMPLE_BTN 13
 
@@ -33,8 +34,8 @@ void setup(void)
 {
   Serial.begin(9600);
 
-  //initalize buttons
-  pinMode(MODE_BTN, INPUT_PULLUP);
+  //initalize buttons, use pullup resistors to simplify wiring
+  //Buttons are inverted logic (pressed means LOW)
   pinMode(GAIN_BTN, INPUT_PULLUP);
   pinMode(SAMPLE_BTN, INPUT_PULLUP);
 
@@ -51,10 +52,12 @@ void setup(void)
   else 
   {
     lcd.print("Sensor Err");
+    lcd.setCursor(0,1);
+    lcd.print("Fix and Reset");
     while (1);
   }
   
-  /* Configure light sensor */
+  //Configure light sensor
   tsl.setGain(TSL2591_GAIN_MED);
   tsl.setTiming(TSL2591_INTEGRATIONTIME_300MS);
 
@@ -68,7 +71,6 @@ void setup(void)
 void loop(void) 
 {
   bool getSample = false;
-  bool changeMode = false;
   bool changeGain = false;
 
   //Get button state of sample button, then debounce and only use falling edge
@@ -81,19 +83,6 @@ void loop(void)
     if (samplePress == LOW) {
       Serial.println("sample");
       getSample = true;
-    }
-  }
-
-  //Get button state of mode button, then debounce and only use falling edge
-  int modePress = digitalRead(MODE_BTN);
-  if (modePress != prevModePress && (millis() - prevModeTime) > DEBOUNCE_TIME) {
-    prevModePress = modePress;
-    prevModeTime = millis();
-
-    //falling edge
-    if (modePress == LOW) {
-      Serial.println("mode");
-      changeMode = true;
     }
   }
 
@@ -110,12 +99,13 @@ void loop(void)
     }
   }
 
-  if (millis())
   if (getSample == true) {
     double lux = tsl.getLux();
-    char formated_lux[10] = {0};
+    char formated_lux[10] = {0}; //string
     
     //Change significant figures printed based on gain
+    //using snprintf to uses printf formatting for strings, see https://linux.die.net/man/3/sprintf
+    //snprintf copieds 10 characters from the formatted string into the formated_lux string
     switch(tsl.getGain())
     {
       //round to tens place
@@ -130,19 +120,22 @@ void loop(void)
       
       //two decimal precision
       case TSL2591_GAIN_HIGH:
-        snprintf(formated_lux, 10, "%d.%02d", (int) lux, (int) (lux*100)%100);
+        snprintf(formated_lux, 10, "%d.%02d", (int) lux, (int) (lux*100) % 100);
         break;
       
       //four decimal precision
       case TSL2591_GAIN_MAX:
-        snprintf(formated_lux, 10, "%d.%04d", (int) lux, (int) (lux*10000)%10000);
+        snprintf(formated_lux, 10, "%d.%04d", (int) lux, (int) (lux*10000) % 10000);
         break;
     }
+    
+    //Print lux reading and the formated lux to terminal
     Serial.print("Lux: ");
-    Serial.print(lux, 6);
+    Serial.print(lux, 6); //print 6 decimal places
     Serial.print("Formatted Lux: ");
     Serial.println(formated_lux);
 
+    //Print lux to LCD
     lcd.setCursor(0,1);
     if (lux > 0) {
       lcd.print("Lux: ");
@@ -155,6 +148,7 @@ void loop(void)
     
   }
 
+  //Change the gain by incrementing to the next gain value
   if (changeGain == true) {
     lcd.clear();
     tsl2591Gain_t gain = tsl.getGain();
@@ -196,5 +190,5 @@ void loop(void)
   }
   
 
-  delay(10);
+  delay(10); //small delay to help with button debounce
 }
